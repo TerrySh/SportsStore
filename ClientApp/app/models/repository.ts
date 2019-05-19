@@ -3,15 +3,22 @@ import { Injectable } from '@angular/core';
 import { Http, RequestMethod, Request, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
+import { Filter } from './configClasses.repository';
 
 const productsUrl = "/api/products";
 
 @Injectable()
 export class Repository {
 
+  private filterObject = new Filter();
+
   private productData: Product;
+  products: Product[];
+
   constructor(private http: Http) {
-    this.getProduct(1);
+    this.filter.category = "soccer";
+    this.filter.related = true;
+    this.getProducts();
   }
 
   getProduct(id: number) {
@@ -20,6 +27,20 @@ export class Repository {
         this.productData = response;
         console.log('Product Data Received')
       });
+  }
+
+  getProducts() {
+    let url = productsUrl + "?related=" + this.filter.related;
+
+    if(this.filter.category){
+      url += "&category=" + this.filter.category;
+    }
+    if(this.filter.search){
+      url += "&search=" + this.filter.search;
+    }
+
+    this.sendRequest(RequestMethod.Get, url)
+      .subscribe(response => this.products = response);
   }
 
   private sendRequest(verb: RequestMethod, url: string, data?: any){
@@ -31,5 +52,9 @@ export class Repository {
   get product(): Product {
     console.log('Product Data Requested');
     return this.productData;
+  }
+
+  get filter(): Filter {
+    return this.filterObject;
   }
 }

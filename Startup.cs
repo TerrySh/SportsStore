@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SportsStore.Models;
+using Newtonsoft.Json;
 
 namespace SportsStore
 {
@@ -31,8 +32,12 @@ namespace SportsStore
       {
         options.UseSqlServer(Configuration["Data:Products:ConnectionString"]);
       });
-      
-      services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+      services.AddMvc()
+      .AddJsonOptions(option => {
+        option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
+        option.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+      })
+      .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
