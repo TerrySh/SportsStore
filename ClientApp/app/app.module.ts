@@ -8,6 +8,7 @@ import { ModelModule } from './models/model.module';
 import { ProductTableComponent } from './structure/productTable.component';
 import { CategoryFilterComponent } from './structure/categoryFilter.component';
 import { ProductDetailComponent } from './structure/productDetail.component';
+import { RoutingConfig } from "./app.routing";
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { ProductDetailComponent } from './structure/productDetail.component';
     BrowserModule,
     FormsModule,
     HttpModule,
-    ModelModule
+    ModelModule,
+    RoutingConfig,
   ],
   providers: [],
   bootstrap: [AppComponent]
