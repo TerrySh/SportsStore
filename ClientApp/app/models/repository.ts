@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Http, RequestMethod, Request, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
-import { Filter } from './configClasses.repository';
+import { Filter, Pagination } from './configClasses.repository';
 import { Supplier } from './supplier.model';
 
 const productsUrl = "/api/products";
@@ -13,10 +13,12 @@ const suppliersUrl = "/api/suppliers"
 export class Repository {
 
   private filterObject = new Filter();
+  private paginationObject = new Pagination();
 
   private productData: Product;
   products: Product[];
   suppliers: Supplier[] = [];
+  categories: string[] = [];
 
   constructor(private http: Http) {
     //this.filter.category = "soccer";
@@ -48,8 +50,17 @@ export class Repository {
       url += "&search=" + this.filter.search;
     }
 
+    url += "&metadata=true";
     this.sendRequest(RequestMethod.Get, url)
-      .subscribe(response => this.products = response);
+      .subscribe(response => {
+        this.products = response.data;
+        this.categories = response.categories;
+        this.pagination.currentPage = 1;
+      });
+  }
+
+  get pagination(): Pagination {
+    return this.paginationObject;
   }
 
   get product(): Product {
