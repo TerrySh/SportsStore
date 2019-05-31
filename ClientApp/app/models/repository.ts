@@ -5,9 +5,11 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import { Filter, Pagination } from './configClasses.repository';
 import { Supplier } from './supplier.model';
+import { Order } from './order.model';
 
 const productsUrl = "/api/products";
 const suppliersUrl = "/api/suppliers"
+const ordersUrl = "/api/orders";
 
 @Injectable()
 export class Repository {
@@ -19,6 +21,7 @@ export class Repository {
   products: Product[];
   suppliers: Supplier[] = [];
   categories: string[] = [];
+  orders: Order[] = [];
 
   constructor(private http: Http) {
     //this.filter.category = "soccer";
@@ -26,7 +29,7 @@ export class Repository {
     this.getProducts();
   }
 
-  private sendRequest(verb: RequestMethod, url: string, data?: any){
+  private sendRequest(verb: RequestMethod, url: string, data?: any) {
     return this.http.request(new Request({
       method: verb, url: url, body: data
     })).map(response => response.headers.get("Content-Length") != '0' ? response.json() : null);
@@ -43,10 +46,10 @@ export class Repository {
   getProducts() {
     let url = productsUrl + "?related=" + this.filter.related;
 
-    if(this.filter.category){
+    if (this.filter.category) {
       url += "&category=" + this.filter.category;
     }
-    if(this.filter.search){
+    if (this.filter.search) {
       url += "&search=" + this.filter.search;
     }
 
@@ -74,7 +77,7 @@ export class Repository {
 
   getSuppliers() {
     this.sendRequest(RequestMethod.Get, suppliersUrl)
-    .subscribe(response => this.suppliers = response);
+      .subscribe(response => this.suppliers = response);
   }
 
   createProduct(prod: Product) {
@@ -84,10 +87,10 @@ export class Repository {
       supplier: prod.supplier ? prod.supplier.supplierId : 0
     };
     this.sendRequest(RequestMethod.Post, productsUrl, data)
-    .subscribe(response => {
-      prod.productId = response;
-      this.products.push(prod);
-    });
+      .subscribe(response => {
+        prod.productId = response;
+        this.products.push(prod);
+      });
   }
 
   createProductAndSupplier(prod: Product, supp: Supplier) {
@@ -101,8 +104,8 @@ export class Repository {
         this.suppliers.push(supp);
         if (prod != null) {
           this.createProduct(prod);
-      }
-    });
+        }
+      });
   }
 
   replaceProduct(prod: Product) {
@@ -112,7 +115,7 @@ export class Repository {
       supplier: prod.supplier ? prod.supplier.supplierId : 0
     };
     this.sendRequest(RequestMethod.Put, productsUrl + "/" + prod.productId, data)
-    .subscribe(response => this.getProducts());
+      .subscribe(response => this.getProducts());
   }
 
   replaceSupplier(supp: Supplier) {
@@ -128,26 +131,54 @@ export class Repository {
     changes.forEach((value, key) =>
       patch.push({ op: "replace", path: key, value: value }));
     this.sendRequest(RequestMethod.Patch, productsUrl + "/" + id, patch)
-    .subscribe(response => this.getProducts());
+      .subscribe(response => this.getProducts());
   }
 
 
   deleteProduct(id: number) {
     this.sendRequest(RequestMethod.Delete, productsUrl + "/" + id)
-    .subscribe(response => this.getProducts());
+      .subscribe(response => this.getProducts());
   }
 
   deleteSupplier(id: number) {
     this.sendRequest(RequestMethod.Delete, suppliersUrl + "/" + id)
-    .subscribe(response => {
-      this.getProducts();
-      this.getSuppliers();
+      .subscribe(response => {
+        this.getProducts();
+        this.getSuppliers();
+      });
+  }
+
+  storeSessionData(dataType: string, data: any) {
+    return this.sendRequest(RequestMethod.Post, "/api/session/" + dataType, data)
+      .subscribe(response => { });
+  }
+
+  getSessionData(dataType: string): Observable<any> {
+    return this.sendRequest(RequestMethod.Get, "/api/session/" + dataType);
+  }
+
+  getOrders() {
+    this.sendRequest(RequestMethod.Get, ordersUrl)
+      .subscribe(data => this.orders = data);
+  }
+
+  createOrder(order: Order) {
+    this.sendRequest(RequestMethod.Post, ordersUrl, {
+      name: order.name,
+      address: order.address,
+      payment: order.payment,
+      products: order.products
+    }).subscribe(data => {
+      order.orderConfirmation = data
+      order.cart.clear();
+      order.clear();
     });
   }
 
-
-
-
+  shipOrder(order: Order) {
+    this.sendRequest(RequestMethod.Post, ordersUrl + "/" + order.orderId)
+      .subscribe(r => this.getOrders())
+  }
 
 
 }

@@ -38,10 +38,22 @@ namespace SportsStore
         option.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
       })
       .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+      services.AddDistributedSqlServerCache(options => {
+        options.ConnectionString = Configuration["Data:Products:ConnectionString"];
+        options.SchemaName = "dbo";
+        options.TableName = "SessionData";
+      });
+
+      services.AddSession(options => {
+        options.Cookie.Name = "SportsStore.Session";
+        options.IdleTimeout = TimeSpan.FromHours(48);
+        options.Cookie.HttpOnly = false;
+      });
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, DataContext context)
     {
 
       app.UseDeveloperExceptionPage();
@@ -64,7 +76,7 @@ namespace SportsStore
       //app.UseHttpsRedirection();
 
       app.UseStaticFiles();
-
+      app.UseSession();
       app.UseMvc(routes =>
       {
         routes.MapRoute(
@@ -74,7 +86,7 @@ namespace SportsStore
         routes.MapSpaFallbackRoute("angular-fallback", new {controller = "Home", action = "Index"});
       });
 
-      SeedData.SeedDatabase(app.ApplicationServices.GetRequiredService<DataContext>());
+      SeedData.SeedDatabase(context);
     }
   }
 }
