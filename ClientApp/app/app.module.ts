@@ -10,6 +10,7 @@ import { ModelModule } from './models/model.module';
 //import { ProductDetailComponent } from './structure/productDetail.component';
 import { RoutingConfig } from "./app.routing";
 import { StoreModule } from "./store/store.module";
+import { AdminModule } from "./admin/admin.module";
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { StoreModule } from "./store/store.module";
     HttpModule,
     ModelModule,
     RoutingConfig,
-    StoreModule
+    StoreModule,
+    AdminModule
   ],
   providers: [],
   bootstrap: [AppComponent]

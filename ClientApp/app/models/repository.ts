@@ -71,6 +71,10 @@ export class Repository {
     return this.productData;
   }
 
+  set product(value) {
+    this.productData = value;
+  }
+
   get filter(): Filter {
     return this.filterObject;
   }

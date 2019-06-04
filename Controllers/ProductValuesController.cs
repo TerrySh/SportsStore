@@ -19,7 +19,7 @@ namespace SportsStore.Controllers {
 
     [HttpGet("{id}")]
     public Product GetProduct(long id) {
-      System.Threading.Thread.Sleep(1000);
+      // System.Threading.Thread.Sleep(1000);
       var result = context.Products
       .Include(p => p.Supplier).ThenInclude(s => s.Products)
       .Include(p => p.Ratings)
