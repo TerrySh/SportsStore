@@ -6,6 +6,8 @@ import 'rxjs/add/operator/map';
 import { Filter, Pagination } from './configClasses.repository';
 import { Supplier } from './supplier.model';
 import { Order } from './order.model';
+import { ErrorHandlerService, ValidationError } from "../errorHandler.service";
+import "rxjs/add/operator/catch";
 
 const productsUrl = "/api/products";
 const suppliersUrl = "/api/suppliers"
@@ -32,7 +34,25 @@ export class Repository {
   private sendRequest(verb: RequestMethod, url: string, data?: any) {
     return this.http.request(new Request({
       method: verb, url: url, body: data
-    })).map(response => response.headers.get("Content-Length") != '0' ? response.json() : null);
+    }))
+    .map(response => response.headers.get("Content-Length") != '0' ? response.json() : null)
+    .catch((errorResponse: Response) => {
+      if(errorResponse.status == 400) {
+        let jsonData: string;
+        try {
+          jsonData = errorResponse.json();
+        } catch (e) {
+          throw new Error("Network Error");
+        }
+
+        let messages = Object.getOwnPropertyNames(jsonData)
+        .map(p => jsonData[p]);
+
+        throw new ValidationError(messages);
+      }
+
+      throw new Error("Network Error");
+    });
   }
 
   getProduct(id: number) {

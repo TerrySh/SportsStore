@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { Repository } from './models/repository';
 import { Product } from './models/product.model';
 import { Supplier } from './models/supplier.model';
+import { ErrorHandlerService } from "./errorHandler.service";
 
 @Component({
   selector: 'app-root',
@@ -11,14 +12,28 @@ import { Supplier } from './models/supplier.model';
 export class AppComponent {
   //title = 'Angular & ASP.NET Core MVC';
   //title = no_such_object;
+  private lastError: string[];
 
-  constructor(private repo: Repository){}
+  constructor(private repo: Repository, errorHandler: ErrorHandlerService, ngZone: NgZone) {
+    errorHandler.errors.subscribe(error => {
+      ngZone.run(() => this.lastError = error);
+    });
+  }
+
+
+  get error(): string[] {
+    return this.lastError;
+  }
+
+  clearError() {
+    this.lastError = null;
+  }
 
   get product(): Product {
     return this.repo.product;
   }
 
-  get products(): Product[]{
+  get products(): Product[] {
     return this.repo.products;
   }
 

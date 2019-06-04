@@ -11,6 +11,14 @@ import { ModelModule } from './models/model.module';
 import { RoutingConfig } from "./app.routing";
 import { StoreModule } from "./store/store.module";
 import { AdminModule } from "./admin/admin.module";
+import { ErrorHandler } from "@angular/core";
+import { ErrorHandlerService } from "./errorHandler.service";
+
+const eHandler = new ErrorHandlerService();
+
+export function handler() {
+  return eHandler;
+}
 
 @NgModule({
   declarations: [
@@ -25,7 +33,10 @@ import { AdminModule } from "./admin/admin.module";
     StoreModule,
     AdminModule
   ],
-  providers: [],
+  providers: [
+    { provide: ErrorHandlerService, useFactory: handler},
+    { provide: ErrorHandler, useFactory: handler}
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
